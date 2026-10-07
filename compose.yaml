@@ -1,0 +1,49 @@
+services:
+  db:
+    image: postgres:17
+    container_name: demo-db
+
+    environment:
+      POSTGRES_USER: devops
+      POSTGRES_PASSWORD: devops
+      POSTGRES_DB: demoapp
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U devops -d demoapp"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+    volumes:
+      - demo-db-data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+    networks:
+      - demo-network
+
+  app:
+    build: .
+    container_name: demo-app-container
+
+    ports:
+      - "5000:5000"
+
+    environment:
+      APP_ENV: development
+      PORT: 5000
+      DATABASE_URL: postgresql://devops:devops@db:5432/demoapp
+
+    depends_on:
+      db:
+        condition: service_healthy
+
+    networks:
+      - demo-network
+
+
+volumes:
+  demo-db-data:
+
+
+networks:
+  demo-network:
