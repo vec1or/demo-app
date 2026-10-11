@@ -2,10 +2,12 @@ import os
 from flask import Flask, jsonify
 from dotenv import load_dotenv
 import psycopg2
+from prometheus_flask_exporter import PrometheusMetrics
 
 load_dotenv()
 
 app = Flask(__name__)
+metrics = PrometheusMetrics(app)
 
 @app.route("/")
 def home():
@@ -15,12 +17,12 @@ def home():
 def health():
     database_ok = database_check()
     status = "ok" if database_ok else "error"
-    
+
     return jsonify({
         "status": status,
         "environment": os.getenv("APP_ENV", "unknown"),
         "database": "up" if database_ok else "down"
-    })
+    }), 200 if database_ok else 503
 
 def get_db_connection():
     return psycopg2.connect(
