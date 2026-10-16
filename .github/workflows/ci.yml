@@ -61,7 +61,7 @@ jobs:
 
   deploy:
     name: Deploy to K3s
-    needs: docker-build
+    needs: [docker-build, security-scan]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: [self-hosted, Linux, X64, cd-k3s]
 
@@ -85,3 +85,23 @@ jobs:
           KUBECONFIG: /home/github-runner/.kube/config
         run: |
           kubectl -n devops-helm get deployment demo-app-flask
+
+  security-scan:
+    name: Scan Docker Image
+    needs: docker-build
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: read
+
+    steps:
+      - name: Scan image with Trivy
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          image-ref: ghcr.io/vec1or/demo-app:${{ github.sha }}
+          format: table
+          exit-code: '1'
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
