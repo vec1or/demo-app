@@ -58,3 +58,30 @@ jobs:
           tags: |
             ghcr.io/vec1or/demo-app:latest
             ghcr.io/vec1or/demo-app:${{ github.sha }}
+
+  deploy:
+    name: Deploy to K3s
+    needs: docker-build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: [self-hosted, Linux, X64, cd-k3s]
+
+    timeout-minutes: 10
+
+    steps:
+      - name: Deploy image
+        env:
+          KUBECONFIG: /home/github-runner/.kube/config
+          IMAGE: ghcr.io/vec1or/demo-app:${{ github.sha }}
+        run: |
+          kubectl -n devops-helm set image \
+            deployment/demo-app-flask \
+            flask="$IMAGE"
+
+          kubectl -n devops-helm rollout status \
+            deployment/demo-app-flask --timeout=180s
+
+      - name: Verify deployment
+        env:
+          KUBECONFIG: /home/github-runner/.kube/config
+        run: |
+          kubectl -n devops-helm get deployment demo-app-flask
