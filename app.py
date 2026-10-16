@@ -3,6 +3,7 @@ from flask import Flask, jsonify
 from dotenv import load_dotenv
 import psycopg2
 from prometheus_flask_exporter import PrometheusMetrics
+from urllib.parse import quote
 
 load_dotenv()
 
@@ -25,9 +26,17 @@ def health():
     }), 200 if database_ok else 503
 
 def get_db_connection():
-    return psycopg2.connect(
-        os.getenv("DATABASE_URL")
-    )
+    database_url = os.getenv("DATABASE_URL")
+
+    if not database_url:
+        user = os.getenv("POSTGRES_USER", "devops")
+        password = quote(os.environ["POSTGRES_PASSWORD"], safe="")
+        host = os.getenv("POSTGRES_HOST", "postgres")
+        database = os.getenv("POSTGRES_DB", "demoapp")
+
+        database_url = f"postgresql://{user}:{password}@{host}:5432/{database}"
+
+    return psycopg2.connect(database_url)
 
 @app.route("/messages")
 def messages():
