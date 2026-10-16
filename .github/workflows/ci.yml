@@ -58,6 +58,7 @@ jobs:
           tags: |
             ghcr.io/vec1or/demo-app:latest
             ghcr.io/vec1or/demo-app:${{ github.sha }}
+          sbom: false
 
   deploy:
     name: Deploy to K3s
