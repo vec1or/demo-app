@@ -208,3 +208,7 @@ For production deployments, consider using a production WSGI server, stronger se
 - [Terraform Docker Infrastructure](https://github.com/vec1or/terraform-docker-infrastructure)
 - [DevOps Monitoring Stack](https://github.com/vec1or/devops-monitoring-stack)
 - [Ansible Ubuntu Automation](https://github.com/vec1or/ansible-ubuntu-automation)
+
+## CloudForge Deployment Test
+
+Automated deployment managed by GitHub Actions.
